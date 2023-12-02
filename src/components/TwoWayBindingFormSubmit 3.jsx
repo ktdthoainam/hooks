@@ -5,7 +5,7 @@ function TwoWayBindingFormSubmit() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [isSuccess, setIsSuccess] = useState(false);
-  const [showAlert, setShowAlert] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleSubmitLogin = (e) => {
     e.preventDefault();
@@ -24,8 +24,7 @@ function TwoWayBindingFormSubmit() {
   return (
     <div>
       <h1 className="">Login Form</h1>
-      {
-        isSuccess && (
+      {isSuccess && (
         <SuccessAlert showAlert={showAlert} setShowAlert={setShowAlert} />
       )}
 
