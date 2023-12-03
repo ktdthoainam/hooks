@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 function PlayListApp() {
   const [playList, setPlayList] = useState([
@@ -24,12 +25,15 @@ function PlayListApp() {
     setNewMusic();
     setSelectIndex(-1);
     setPlayList(playList);
+    toast.success("Music update success");
   };
 
   const handleAddMusic = (e) => {
     e.preventDefault();
     setPlayList([...playList, music]);
     setMusic("");
+    toast.info("Music added success",{autoClose:1000,position:"bottom-right"});
+
   };
   const hanldRemoveMusic = (idx, music) => {
     // let newplayList = playList.filter((item, index) => index != idx);
@@ -66,7 +70,7 @@ function PlayListApp() {
       </form>
       <div className="w-75 mt-3">
         <ul className="list-group">
-          {playList.map((music, index) => (
+          {playList.map((song, index) => (
             <li
               key={index}
               className="list-group-item d-flex justify-content-between align-item-center"
@@ -74,11 +78,11 @@ function PlayListApp() {
               {selectIndex == index ? (
                 <input
                   form="control"
-                  value={newMusic || music}
+                  value={newMusic || song}
                   onInput={(e) => setNewMusic(e.target.value)}
                 />
               ) : (
-                music
+                song
               )}
               <div className="d-plex">
                 {selectIndex == index ? (
@@ -123,7 +127,7 @@ function PlayListApp() {
                       className="d-inline-block"
                       data-bs-toggle="tooltip"
                       title="Delete"
-                      onClick={() => hanldRemoveMusic(index, music)}
+                      onClick={() => hanldRemoveMusic(index, song)}
                     >
                       <i
                         role="button"
