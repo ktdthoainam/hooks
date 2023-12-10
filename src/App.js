@@ -8,8 +8,8 @@ function App() {
     <div className="container">
       <Routes>
         <Route path="/" element={<StudentList />} />
-        <Route path="/teacher" element={<StudentList />} />
-        <Route path="/teacher/:teacherId" element={<StudentDetail />} />
+        <Route path="/student" element={<StudentList />} />
+        <Route path={`/student/:studentId`} element={<StudentDetail />} />
       </Routes>
     </div>
   );

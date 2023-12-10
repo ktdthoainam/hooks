@@ -23,23 +23,32 @@ function StudentList() {
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <table className="table">
+        <table className="table table-striped">
           <thead>
             <tr>
               <th> #ID</th>
               <th>HỌ VÀ TÊN</th>
-              <th>NGÀY THÁNG NĂM SINH</th>
+              <th>NGÀY SINH</th>
               <th>Email</th>
               <th>GIỚI TÍNH</th>
-              <th>Action</th>
+              <th>TUỲ CHỌN</th>
             </tr>
           </thead>
           <tbody>
             {studentList.map((student) => (
               <tr key={student.id}>
                 <td>{student.id}</td>
-                <td>{student.name}</td>
-                <td>{student.dod}</td>
+                <td>
+                  <div className="d-flex align-items-center">
+                    <img
+                      className="rounded-circle avatar-sm me-2"
+                      src={student.avatar}
+                      alt=""
+                    />
+                    {student.name}
+                  </div>
+                </td>
+                <td>{student.dob}</td>
                 <td>{student.email}</td>
                 <td>{student.gender ? "Male" : "Famale"}</td>
                 <td>
