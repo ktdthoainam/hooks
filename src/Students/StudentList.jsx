@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-function TeacherList() {
-  const [teacherList, setTeacherList] = useState([]);
+function StudentList() {
+  const [studentList, setStudentList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -10,15 +10,15 @@ function TeacherList() {
     fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/teacher")
       .then((response) => response.json())
       .then((data) => {
-        setTeacherList(data);
+        setStudentList(data);
         setIsLoading(false);
       });
   }, []);
-  console.log(teacherList);
+  console.log(studentList);
   return (
     <>
       <div>
-        <h3>Teacher List</h3>
+        <h3>Quản lý sinh viên</h3>
       </div>
       {isLoading ? (
         <p>Loading...</p>
@@ -27,24 +27,24 @@ function TeacherList() {
           <thead>
             <tr>
               <th> #ID</th>
-              <th>Full Name</th>
-              <th>DOD</th>
+              <th>HỌ VÀ TÊN</th>
+              <th>NGÀY THÁNG NĂM SINH</th>
               <th>Email</th>
-              <th>Gender</th>
+              <th>GIỚI TÍNH</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {teacherList.map((teacher) => (
-              <tr key={teacher.id}>
-                <td>{teacher.id}</td>
-                <td>{teacher.name}</td>
-                <td>{teacher.dod}</td>
-                <td>{teacher.email}</td>
-                <td>{teacher.gender ? "Male" : "Famale"}</td>
+            {studentList.map((student) => (
+              <tr key={student.id}>
+                <td>{student.id}</td>
+                <td>{student.name}</td>
+                <td>{student.dod}</td>
+                <td>{student.email}</td>
+                <td>{student.gender ? "Male" : "Famale"}</td>
                 <td>
                   <Link
-                    to={`/teacher/${teacher.id}`}
+                    to={`/student/${student.id}`}
                     className="btn btn-sm btn-link"
                   >
                     Detail
@@ -58,4 +58,4 @@ function TeacherList() {
     </>
   );
 }
-export default TeacherList;
+export default StudentList;
