@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import dayjs from "dayjs";
 
 function StudentDetail() {
   const { studentId } = useParams();
@@ -8,7 +9,7 @@ function StudentDetail() {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     setIsLoading(true);
-    fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/teacher/${studentId}`)
+    fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${studentId}`)
       .then((res) => res.json())
       .then((data) => {
         setStudentDetail(data);
@@ -19,14 +20,12 @@ function StudentDetail() {
     <>
       <div>
         <h3>Student Detail</h3>
-        <Link to={"/student"}>Back to list</Link>
+        <Link to={"/student"}>Quay lại danh sách sinh viên</Link>
       </div>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
         <>
-          {/* <div>Fullname: {studentDetail.name}</div>
-          <div>Email: {studentDetail.email} </div> */}
           <div className="card" style={{ width: "18rem" }}>
             <img
               src={studentDetail.avatar}
@@ -38,9 +37,15 @@ function StudentDetail() {
             </div>
             <ul className="list-group list-group-flush">
               <li className="list-group-item">Email: {studentDetail.email}</li>
-              <li className="list-group-item">DOB: {studentDetail.dob}</li>
               <li className="list-group-item">
-                Gender: {studentDetail.gender}
+                Ngày sinh: {dayjs(studentDetail.dob).format("DD/MM/YYYY")}
+              </li>
+              <li className="list-group-item">
+                Chuyên ngành: {studentDetail.department?.name}
+              </li>
+
+              <li className="list-group-item">
+                Giới tính: {studentDetail.gender}
               </li>
             </ul>
           </div>
