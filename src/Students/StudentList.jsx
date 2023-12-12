@@ -5,12 +5,14 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const schema = yup.object({
   name: yup.string().required(),
   email: yup.string().required().email(),
   dob: yup.date().required().typeError("dob is a required field"),
   avatar: yup.string().required().url(),
+  gender: yup.string().required(),
 });
 
 function StudentList() {
@@ -18,6 +20,7 @@ function StudentList() {
   const [isLoading, setIsLoading] = useState(false);
   const [toggleForm, setToggleForm] = useState(false);
   const [departmentList, setDepartmentList] = useState([]);
+  const [removeStudent, setRemoveStudent] = useState({});
   const {
     register,
     handleSubmit,
@@ -34,7 +37,7 @@ function StudentList() {
         setStudentList(data);
         setIsLoading(false);
       });
-  }, []);
+  }, [removeStudent]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -48,7 +51,6 @@ function StudentList() {
   // console.log(departmentList);
 
   const handleAddStudent = (data) => {
-    data.gender = Boolean(data.gender);
     data.department = JSON.parse(data.department);
     // setIsLoading(true);
     fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/student", {
@@ -66,8 +68,38 @@ function StudentList() {
           .then((data) => {
             setStudentList(data);
             setIsLoading(false);
+            reset();
           });
       });
+  };
+  const handleRemoveStudent = (student) => {
+    Swal.fire({
+      title: "Bạn chắc chắn muốn xoá?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Xoá",
+      cancelButtonText: "Huỷ",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Đã xoá!",
+          icon: "success",
+        });
+        fetch(
+          `https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${student.id}`,
+          {
+            method: "DELETE",
+          }
+        )
+          .then((res) => res.json())
+          .then((result) => {
+            setRemoveStudent(result);
+          });
+      }
+    });
+   
   };
   return (
     <>
@@ -146,9 +178,8 @@ function StudentList() {
                         <input
                           className="form-check-input"
                           type="radio"
-                          defaultValue="true"
-                          checked
                           name="gender"
+                          defaultValue="Nam"
                           {...register("gender")}
                         />
                         <label className="form-check-label">Nam</label>
@@ -157,13 +188,17 @@ function StudentList() {
                         <input
                           className="form-check-input"
                           type="radio"
-                          defaultValue="false"
+                          defaultValue="Nữ"
                           name="gender"
                           {...register("gender")}
                         />
                         <label className="form-check-label">Nữ</label>
                       </div>
                     </div>
+                    <span className="text-danger">
+                      {" "}
+                      {errors.gender?.message}
+                    </span>
                   </div>
                   <div className="form-group mb-3">
                     <label className="form-label">
@@ -183,15 +218,13 @@ function StudentList() {
                 </div>
                 <div className="form-group mb-3">
                   <button className="btn btn-sm btn-success me-3" type="submit">
-                    {" "}
                     TẠO MỚI
                   </button>
                   <button
-                    className="btn btn-sm btn-dark"
+                    className="btn btn-sm btn-dark me-3"
                     type="button"
                     onClick={() => reset()}
                   >
-                    {" "}
                     HUỶ
                   </button>
                 </div>
@@ -232,21 +265,28 @@ function StudentList() {
                   </td>
                   <td>{dayjs(student.dob).format("DD/MM/YYYY")}</td>
                   <td>{student.email}</td>
-                  <td>{student.gender ? "Male" : "Famale"}</td>
+                  <td>{student.gender}</td>
                   <td>{student.department.name}</td>
                   <td>
                     <Link
                       to={`/student/${student.id}`}
                       className="btn btn-sm btn-primary me-2"
                     >
-                      Detail
+                      Chi tiết
                     </Link>
                     <Link
                       to={`/student/modify/${student.id}`}
-                      className="btn btn-sm btn-success"
+                      className="btn btn-sm btn-success me-2"
                     >
-                      Modify
+                      Sửa
                     </Link>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      type="button"
+                      onClick={() => handleRemoveStudent(student)}
+                    >
+                      Xoá
+                    </button>
                   </td>
                 </tr>
               ))}

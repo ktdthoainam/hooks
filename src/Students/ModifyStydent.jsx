@@ -59,7 +59,6 @@ function ModifyStudent() {
   }, []);
 
   const handleUpdate = (data) => {
-    data.gender = Boolean(data.gender);
     data.department = JSON.parse(data.department);
     fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${studentId}`, {
       method: "PUT",
@@ -139,13 +138,13 @@ function ModifyStudent() {
                 <div className="form-group mb-4">
                   <label className="form-label mb-2"> Giới tính </label>
                   <div>
-                    {StudentDetail.gender ? (
+                    {StudentDetail.gender =="Nam" ? (
                       <>
                         <div className="form-check form-check-inline">
                           <input
                             className="form-check-input"
                             type="radio"
-                            defaultValue="true"
+                            defaultValue="Nam"
                             checked
                             name="gender"
                             {...register("gender")}
@@ -156,7 +155,7 @@ function ModifyStudent() {
                           <input
                             className="form-check-input"
                             type="radio"
-                            defaultValue="fale"
+                            defaultValue="Nữ"
                             name="gender"
                             {...register("gender")}
                           />
@@ -169,7 +168,7 @@ function ModifyStudent() {
                           <input
                             className="form-check-input"
                             type="radio"
-                            defaultValue="true"
+                            defaultValue="Nam"
                             name="gender"
                             {...register("gender")}
                           />
@@ -179,7 +178,7 @@ function ModifyStudent() {
                           <input
                             className="form-check-input"
                             type="radio"
-                            defaultValue="fale"
+                            defaultValue="Nữ"
                             checked
                             name="gender"
                             {...register("gender")}
