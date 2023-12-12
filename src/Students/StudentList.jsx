@@ -4,14 +4,18 @@ import dayjs from "dayjs";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import StudentServices from "./../services/studentServices";
+import DepartmentServices from "../services/departmentServices";
+import NoAvatar from "../asset/image/noAvatar.png";
+import FileService from "../services/fileSevice";
 
 const schema = yup.object({
   name: yup.string().required(),
   email: yup.string().required().email(),
   dob: yup.date().required().typeError("dob is a required field"),
-  avatar: yup.string().required().url(),
+  // avatar: yup.string().required().url(),
   gender: yup.string().required(),
 });
 
@@ -21,6 +25,8 @@ function StudentList() {
   const [toggleForm, setToggleForm] = useState(false);
   const [departmentList, setDepartmentList] = useState([]);
   const [removeStudent, setRemoveStudent] = useState({});
+  const [temporaryAvatar, setTemporaryAvatar] = useState();
+  const [fileAvatar, setFileAvatar] = useState({});
   const {
     register,
     handleSubmit,
@@ -29,48 +35,53 @@ function StudentList() {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  async function fetchData() {
+    let studentRes = await StudentServices.getStudents();
+    setStudentList(studentRes.data);
+    setIsLoading(false);
+  }
+
   useEffect(() => {
     setIsLoading(true);
-    fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/student")
-      .then((response) => response.json())
-      .then((data) => {
-        setStudentList(data);
-        setIsLoading(false);
-      });
+    fetchData();
   }, [removeStudent]);
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/department")
-      .then((response) => response.json())
-      .then((data) => {
-        setDepartmentList(data);
-        setIsLoading(false);
-      });
-  }, []);
-  // console.log(departmentList);
 
-  const handleAddStudent = (data) => {
+    async function fetchDepartment() {
+      let deparRes = await DepartmentServices.getDepartments();
+      setDepartmentList(deparRes.data);
+      setIsLoading(false);
+    }
+    fetchDepartment();
+  }, []);
+
+  const handleAddStudent = async (data) => {
     data.department = JSON.parse(data.department);
-    // setIsLoading(true);
-    fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/student", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        toast.success(`Sinh viên ${result.name} được thêm thành công}`);
-        fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/student")
-          .then((response) => response.json())
-          .then((data) => {
-            setStudentList(data);
-            setIsLoading(false);
-            reset();
-          });
-      });
+    data.avatar = temporaryAvatar;
+    setIsLoading(true);
+    let createStudentRes = await StudentServices.createStudent(data);
+    if (createStudentRes.data) {
+      toast.success(`Sinh viên ${createStudentRes.data.name} được thêm thành công}`);
+      fetchData();
+      reset();
+      setTemporaryAvatar();
+      setFileAvatar()
+    }
+    setIsLoading(false);
+  };
+  const handleSelectAvatar = (e) => {
+    // console.log(e.target.files[0]);
+    const temporaryAvatar = URL.createObjectURL(e.target.files[0]);
+    setTemporaryAvatar(temporaryAvatar);
+    setFileAvatar(e.target.files[0]);
+  };
+  const handleUploadAvatar = async () => {
+    let uploadRes = await FileService.upload(fileAvatar);
+    setTemporaryAvatar(uploadRes.data.secure_url);
+    toast.success('Avatar cập nhật thành công')
   };
   const handleRemoveStudent = (student) => {
     Swal.fire({
@@ -81,25 +92,20 @@ function StudentList() {
       cancelButtonColor: "#d33",
       confirmButtonText: "Xoá",
       cancelButtonText: "Huỷ",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         Swal.fire({
           title: "Đã xoá!",
           icon: "success",
         });
-        fetch(
-          `https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${student.id}`,
-          {
-            method: "DELETE",
-          }
-        )
-          .then((res) => res.json())
-          .then((result) => {
-            setRemoveStudent(result);
-          });
+        let delStudentRes = await StudentServices.deleteStudent(student.id);
+        if (delStudentRes.data) {
+          setRemoveStudent(delStudentRes.data);
+        } else {
+          toast.error("Lỗi");
+        }
       }
     });
-   
   };
   return (
     <>
@@ -120,7 +126,7 @@ function StudentList() {
           {toggleForm && (
             <form onSubmit={handleSubmit(handleAddStudent)}>
               <div className="row">
-                <div className="col-md-6">
+                <div className="col-md-4">
                   <div className="form-group mb-3">
                     <label className="form-label">
                       {" "}
@@ -162,15 +168,19 @@ function StudentList() {
                     </span>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div className="form-group mb-3">
+                <div className="col-md-4">
+                  {/* <div className="form-group mb-3">
                     <label className="form-label"> Avatar</label>
                     <input
                       type="text"
                       className="form-control"
                       {...register("avatar")}
                     />
-                  </div>
+                     <span className="text-danger">
+                      {" "}
+                      {errors.avatar?.message}
+                    </span>
+                  </div> */}
                   <div className="form-group mb-3">
                     <label className="form-label"> Giới tính </label>
                     <div>
@@ -214,6 +224,32 @@ function StudentList() {
                         </option>
                       ))}
                     </select>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-group d-flex flex-column align-items-center">
+                    <img
+                      className="avatar-md"
+                      src={temporaryAvatar || NoAvatar}
+                      alt=""
+                      onClick={() =>
+                        document.getElementById("fileAvatar").click()
+                      }
+                    />
+                    <input
+                      type="file"
+                      className="d-none"
+                      id="fileAvatar"
+                      accept="image/*"
+                      onChange={handleSelectAvatar}
+                    />
+                    <button
+                      className="btn btn-sm btn-warning mt-1"
+                      onClick={handleUploadAvatar}
+                      type="button"
+                    >
+                      Upload
+                    </button>
                   </div>
                 </div>
                 <div className="form-group mb-3">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, Params, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import StudentDetail from "./StudentDetail";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import dayjs from "dayjs";
+import StudentServices from "../services/studentServices";
+import DepartmentServices from "../services/departmentServices";
 
 const schema = yup.object({
   name: yup.string().required(),
@@ -33,52 +35,45 @@ function ModifyStudent() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${studentId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setStudentDetail(data);
-        setValue("name", data.name);
-        setValue("email", data.email);
-        setValue("dob", dayjs(data.dob).format("YYYY-MM-DD"));
-        setValue("gender", data.gender);
-        setValue("avatar", data.avatar);
-        setValue("department", JSON.stringify(data.department));
-
-        setIsLoading(false);
-      });
+    async function getStudent() {
+      let studentRes = await StudentServices.getStudent(studentId);
+      setStudentDetail(studentRes.data);
+      setValue("name", studentRes.data.name);
+      setValue("email", studentRes.data.email);
+      setValue("dob", dayjs(studentRes.data.dob).format("YYYY-MM-DD"));
+      setValue("gender", studentRes.data.gender);
+      setValue("avatar", studentRes.data.avatar);
+      setValue("department", JSON.stringify(studentRes.data.department));
+      setIsLoading(false);
+    }
+    getStudent();
   }, [studentId]);
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("https://6571b5ded61ba6fcc01353c3.mockapi.io/department")
-      .then((response) => response.json())
-      .then((data) => {
-        setDepartmentList(data);
-        setIsLoading(false);
-      });
+    async function fetchDepartment() {
+      let deparRes = await DepartmentServices.getDepartments();
+      setDepartmentList(deparRes.data);
+      setIsLoading(false);
+    }
+    fetchDepartment();
   }, []);
 
-  const handleUpdate = (data) => {
+  const handleUpdate = async (data) => {
     data.department = JSON.parse(data.department);
-    fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${studentId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        toast.success(`Cập nhật thành công`);
-        navigate("/student");
-        setIsLoading(true);
-      });
+    setIsLoading(true);
+    let editStudentRes = await StudentServices.modifyStudent(data, studentId);
+    if (editStudentRes.data) {
+      toast.success(`Cập nhật thành công`);
+      setIsLoading(false);
+      navigate("/student");
+    }
   };
 
   return (
     <>
       <div>
-        <h3>CHỉnh sửa danh sách sinh viên</h3>
+        <h3>Chỉnh sửa danh sách sinh viên</h3>
         <Link to={"/student"}>Quay lại danh sách sinh viên</Link>
       </div>
       <div>
@@ -138,7 +133,7 @@ function ModifyStudent() {
                 <div className="form-group mb-4">
                   <label className="form-label mb-2"> Giới tính </label>
                   <div>
-                    {StudentDetail.gender =="Nam" ? (
+                    {StudentDetail.gender == "Nam" ? (
                       <>
                         <div className="form-check form-check-inline">
                           <input

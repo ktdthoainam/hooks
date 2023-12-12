@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
+import StudentServices from "../services/studentServices";
 
 function StudentDetail() {
   const { studentId } = useParams();
@@ -9,12 +10,13 @@ function StudentDetail() {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     setIsLoading(true);
-    fetch(`https://6571b5ded61ba6fcc01353c3.mockapi.io/student/${studentId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setStudentDetail(data);
-        setIsLoading(false);
-      });
+    async function getStudent(){
+      let studentRes = await StudentServices.getStudent(studentId)
+      setStudentDetail(studentRes.data);
+      setIsLoading(false);
+    }
+    getStudent();
+    
   }, [studentId]);
   return (
     <>
