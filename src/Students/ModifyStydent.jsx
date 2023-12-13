@@ -9,12 +9,14 @@ import { ToastContainer, toast } from "react-toastify";
 import dayjs from "dayjs";
 import StudentServices from "../services/studentServices";
 import DepartmentServices from "../services/departmentServices";
+import Spinner from "../component/Spinner";
+import FileService from "../services/fileSevice";
 
 const schema = yup.object({
   name: yup.string().required(),
   email: yup.string().required().email(),
   dob: yup.date().required().typeError("dob is a required field"),
-  avatar: yup.string().required().url(),
+  // avatar: yup.string().required().url(),
 });
 
 function ModifyStudent() {
@@ -23,6 +25,10 @@ function ModifyStudent() {
   const [departmentList, setDepartmentList] = useState([]);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [temporaryAvatar, setTemporaryAvatar] = useState();
+  const [newFileAvatar, setNewFileAvatar] = useState({});
   const {
     register,
     handleSubmit,
@@ -58,6 +64,30 @@ function ModifyStudent() {
     }
     fetchDepartment();
   }, []);
+  const handleUpdateAvatar = async () => {
+    if (newFileAvatar?.name) {
+      setIsUploading(true);
+      let uploadRes = await FileService.upload(newFileAvatar);
+      if (uploadRes?.data?.secure_url) {
+        await StudentServices.modifyStudent(
+          {
+            avatar: uploadRes.data.secure_url,
+          },
+          studentId
+        );
+        setTemporaryAvatar(uploadRes.data.secure_url);
+        toast.success("Avatar đã được thay đổi");
+      }
+      setIsUploading(false);
+    } else {
+      toast.info("Bạn phải cung cấp ảnh avatar mới");
+    }
+  };
+  const handleChangeAvatar = (e) => {
+    const temporaryAvatar = URL.createObjectURL(e.target.files[0]);
+    setTemporaryAvatar(temporaryAvatar);
+    setNewFileAvatar(e.target.files[0]);
+  };
 
   const handleUpdate = async (data) => {
     data.department = JSON.parse(data.department);
@@ -78,7 +108,7 @@ function ModifyStudent() {
       </div>
       <div>
         {isLoading ? (
-          <p>Loading...</p>
+          <Spinner />
         ) : (
           <form onSubmit={handleSubmit(handleUpdate)}>
             <div className="row">
@@ -122,14 +152,17 @@ function ModifyStudent() {
                 </div>
               </div>
               <div className="col-md-4">
-                <div className="form-group mb-3">
-                  <label className="form-label"> Avatar</label>
+                {/* <div className="form-group mb-3"> */}
+                {/* <label className="form-label">
+                    {" "}
+                    Avatar <span className="text-danger">(*)</span>
+                  </label>
                   <input
                     type="text"
                     className="form-control "
                     {...register("avatar")}
-                  />
-                </div>
+                  /> */}
+                {/* </div> */}
                 <div className="form-group mb-4">
                   <label className="form-label mb-2"> Giới tính </label>
                   <div>
@@ -200,14 +233,43 @@ function ModifyStudent() {
                   </select>
                 </div>
               </div>
-              <div className="col-md-4">
-                {" "}
+              <div className="col-md-4 d-flex flex-column align-items-center">
                 <img
-                  className="w-50"
-                  src={StudentDetail.avatar}
+                  className="w-50 avatar-md"
+                  src={temporaryAvatar || StudentDetail.avatar}
                   alt=""
                   {...register("avatar")}
+                  onClick={() => document.getElementById("file-avatar").click()}
                 />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="d-none"
+                  id="file-avatar"
+                  onChange={handleChangeAvatar}
+                />
+                {isUploading ? (
+                  <button
+                    class="btn  btn-sm btn-warning"
+                    type="button"
+                    disabled
+                  >
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Uploading...
+                  </button>
+                ) : (
+                  <button
+                    type="button "
+                    className="btn tn-sm btn-warning mt-1"
+                    onClick={handleUpdateAvatar}
+                  >
+                    Thay đổi Avatar
+                  </button>
+                )}
               </div>
               <div className="form-group mb-3">
                 <button className="btn btn-sm btn-success me-3" type="submit">

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import StudentServices from "../services/studentServices";
+import Spinner from "../component/Spinner";
 
 function StudentDetail() {
   const { studentId } = useParams();
@@ -25,7 +26,7 @@ function StudentDetail() {
         <Link to={"/student"}>Quay lại danh sách sinh viên</Link>
       </div>
       {isLoading ? (
-        <p>Loading...</p>
+       <Spinner/>
       ) : (
         <>
           <div className="card" style={{ width: "18rem" }}>
