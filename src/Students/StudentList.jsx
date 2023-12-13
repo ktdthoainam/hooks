@@ -27,6 +27,7 @@ function StudentList() {
   const [removeStudent, setRemoveStudent] = useState({});
   const [temporaryAvatar, setTemporaryAvatar] = useState();
   const [fileAvatar, setFileAvatar] = useState({});
+  const [isUpload, setIsUpload] = useState(false);
   const {
     register,
     handleSubmit,
@@ -64,11 +65,13 @@ function StudentList() {
     setIsLoading(true);
     let createStudentRes = await StudentServices.createStudent(data);
     if (createStudentRes.data) {
-      toast.success(`Sinh viên ${createStudentRes.data.name} được thêm thành công}`);
+      toast.success(
+        `Sinh viên ${createStudentRes.data.name} được thêm thành công}`
+      );
       fetchData();
       reset();
       setTemporaryAvatar();
-      setFileAvatar()
+      setFileAvatar();
     }
     setIsLoading(false);
   };
@@ -79,9 +82,11 @@ function StudentList() {
     setFileAvatar(e.target.files[0]);
   };
   const handleUploadAvatar = async () => {
+    setIsUpload(true);
     let uploadRes = await FileService.upload(fileAvatar);
     setTemporaryAvatar(uploadRes.data.secure_url);
-    toast.success('Avatar cập nhật thành công')
+    toast.success("Avatar cập nhật thành công");
+    setIsUpload(false);
   };
   const handleRemoveStudent = (student) => {
     Swal.fire({
@@ -243,13 +248,29 @@ function StudentList() {
                       accept="image/*"
                       onChange={handleSelectAvatar}
                     />
-                    <button
-                      className="btn btn-sm btn-warning mt-1"
-                      onClick={handleUploadAvatar}
-                      type="button"
-                    >
-                      Upload
-                    </button>
+                    {isUpload ? (
+                      <button
+                        class="btn  btn-sm btn-warning"
+                        type="button"
+                        disabled
+                      >
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Uploading...
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-sm btn-warning mt-1"
+                        onClick={handleUploadAvatar}
+                        type="button"
+                      >
+                        {" "}
+                        Upload
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="form-group mb-3">
